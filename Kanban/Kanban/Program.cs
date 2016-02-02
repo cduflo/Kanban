@@ -11,7 +11,7 @@ namespace Kanban
         static void Main(string[] args)
         {
             bool repeat = true;
- 
+
             while (repeat)
             {
                 try
@@ -62,7 +62,7 @@ namespace Kanban
             Console.ReadLine();
         }
 
-        private static void GetListing()
+        public static void GetListing()
         {
             using (var db = new KanbanEntities())
             {
@@ -79,7 +79,7 @@ namespace Kanban
             }
         }
 
-        private static void NewList(string listname)
+        public static void NewList(string listname)
         {
             using (var db = new KanbanEntities())
             {
@@ -90,48 +90,48 @@ namespace Kanban
             }
         }
 
-        private static void NewCard(string listname, string cardname)
+        public static void NewCard(string listname, string cardname)
         {
-            int sList = 0;
             using (var db = new KanbanEntities())
             {
-                var selList = db.Lists.Where(u => u.Name == listname);//.Select(u => u.ListID);
-                foreach (var x in selList)
-                {
-                    sList = x.ListID;
-                }
+                var selList = db.Lists.Where(u => u.Name == listname).FirstOrDefault();
                 var newrow = db.Set<Card>();
-                newrow.Add(new Card { ListID = sList, CreatedDate = DateTime.Now, Text = cardname });
+                newrow.Add(new Card { ListID = selList.ListID, CreatedDate = DateTime.Now, Text = cardname });
                 db.SaveChanges();
                 Console.WriteLine(cardname + " added to " + listname);
             }
         }
 
-        private static void DelList(string list)
+        public static void DelList(string list)
         {
             using (var db = new KanbanEntities())
             {
-                var listDelete = db.Lists.Where(u => u.Name == list);
+                var listDelete = db.Lists.Where(u => u.Name == list).FirstOrDefault();
+                DelCard(listDelete.ListID);
+                db.Lists.Remove(listDelete);
+                db.SaveChanges();
+            }
+        }
 
-                foreach (var u in listDelete)
+        public static void DelCard(int id)
+        {
+            using (var db = new KanbanEntities())
+            {
+                var cardsDelete = db.Cards.Where(u => u.ListID == id);
+                foreach (var x in cardsDelete)
                 {
-                    db.Lists.Remove(u);
+                    db.Cards.Remove(x);
                 }
                 db.SaveChanges();
             }
         }
 
-        private static void DelCard(string text)
+        public static void DelCard(string text)
         {
-            Card d = null;
             using (var db = new KanbanEntities())
             {
-                var delCard = db.Cards.Where(u => u.Text == text);
-                foreach (var x in delCard)
-                {
-                    d = x;
-                }
-                db.Cards.Remove(d);
+                var delCard = db.Cards.Where(u => u.Text == text).FirstOrDefault();
+                db.Cards.Remove(delCard);
                 db.SaveChanges();
             }
         }
