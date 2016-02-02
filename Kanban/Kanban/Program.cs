@@ -92,11 +92,16 @@ namespace Kanban
 
         private static void NewCard(string listname, string cardname)
         {
+            int sList = 0;
             using (var db = new KanbanEntities())
             {
-                int selList = Convert.ToInt32(db.Lists.Where(u => u.Name == listname).Select(u => u.ListID));
+                var selList = db.Lists.Where(u => u.Name == listname);//.Select(u => u.ListID);
+                foreach (var x in selList)
+                {
+                    sList = x.ListID;
+                }
                 var newrow = db.Set<Card>();
-                newrow.Add(new Card { ListID = selList, CreatedDate = DateTime.Now, Text = cardname });
+                newrow.Add(new Card { ListID = sList, CreatedDate = DateTime.Now, Text = cardname });
                 db.SaveChanges();
                 Console.WriteLine(cardname + " added to " + listname);
             }
@@ -106,22 +111,27 @@ namespace Kanban
         {
             using (var db = new KanbanEntities())
             {
-                int delCardID = Convert.ToInt32(db.Lists.Where(u => u.Name == list).Select(u => u.ListID));
-                Card delCard = (Card)db.Cards.Where(u => u.ListID == delCardID);
-                db.Cards.Remove(delCard);
-                db.SaveChanges();
-                List delList = (List)db.Lists.Where(u => u.Name == list);
-                db.Lists.Remove(delList);
+                var listDelete = db.Lists.Where(u => u.Name == list);
+
+                foreach (var u in listDelete)
+                {
+                    db.Lists.Remove(u);
+                }
                 db.SaveChanges();
             }
         }
 
         private static void DelCard(string text)
         {
+            Card d = null;
             using (var db = new KanbanEntities())
             {
-                Card delCard = (Card)db.Cards.Where(u => u.Text == text);
-                db.Cards.Remove(delCard);
+                var delCard = db.Cards.Where(u => u.Text == text);
+                foreach (var x in delCard)
+                {
+                    d = x;
+                }
+                db.Cards.Remove(d);
                 db.SaveChanges();
             }
         }
